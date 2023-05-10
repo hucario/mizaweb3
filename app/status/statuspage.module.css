@@ -1,0 +1,117 @@
+.fullPageContainer {
+    min-height: 100%;
+    padding: 0;
+    margin: 0;
+    background: var(--purple-800);
+}
+
+.analyticsNav {
+    width: 100%;
+    position: sticky;
+    top: 0;
+	padding: 0.5rem min(3rem, 3vw);
+	gap: 0.2rem;
+	display: flex;
+	flex-wrap: wrap;
+	pointer-events: none;
+	z-index: 3;
+    background: var(--purple-900);
+}
+.buttons {
+	gap: 0.2rem;
+	display: flex;
+	pointer-events: none;
+}
+
+.spacer {
+	flex-grow: 1;
+}
+@media (max-width: 850px) {
+	.analyticsNav {
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+	}
+	.spacer {
+		max-width: 0;
+	}
+}
+.fullPageContainer::after {
+	content: '';
+	pointer-events: none;
+	display: block;
+	position: fixed;
+	border-radius: 3rem;
+	border: solid 2.1rem var(--purple-900);
+	inset: -1.85rem;
+	top: 1.85rem;
+	z-index: 2;
+}
+
+.mainLink {
+	display: flex;
+	align-items: center;
+	font-size: 1.3rem;
+	font-family: var(--font-mono);
+	font-weight: 400;
+	font-style: italic;
+	text-decoration: none;
+
+	color: var(--purple-050);
+	padding: 0.1rem 1rem;
+	pointer-events: auto;
+	backdrop-filter: blur(5px);
+	border-radius: 5px;
+	background-color: transparent;
+
+	transition: background-color 150ms;
+}
+.mainLink:is(
+	:hover,
+	:focus
+) {
+	background-color: rgba(var(--light), 0.1);
+}
+
+.categoriesHolder {
+	position: absolute;
+	z-index: 3;
+	top: 100%;
+	right: 3rem;
+	width: calc(100% - 6rem);
+    max-width: 90ch;
+	max-height: 80vh;
+
+
+	/** 
+	* Stolen from https://open-props.style
+	* If you need more, steal more
+	*/
+	--gradient-1: linear-gradient(to bottom right,#1f005c, #5b0060, #870160, #ac255e, #ca485c, #e16b5c, #f39060, #ffb56b);
+	--gradient-2: linear-gradient(to bottom right,#48005c, #8300e2, #a269ff);
+	--gradient-3: radial-gradient( circle at top right, hsl(180 100% 50%), hsl(180 100% 50% / 0%) ), radial-gradient( circle at bottom left, hsl(328 100% 54%), hsl(328 100% 54% / 0%) );
+	--gradient-4: linear-gradient(to bottom right,#00F5A0,#00D9F5);
+	--gradient-5: conic-gradient(from -270deg at 75%, at 110%, fuchsia, floralwhite);
+	--gradient-5: conic-gradient(from -270deg at 75% 110%, fuchsia, floralwhite);
+	--gradient-6: conic-gradient(from -90deg at top left, black, white);
+	--gradient-7: linear-gradient(to bottom right,#72C6EF,#004E8F);
+	--gradient-8: conic-gradient(from 90deg at 50%, at 0%, #111, 50%, #222, #111);
+	--gradient-8: conic-gradient(from 90deg at 50% 0%, #111, 50%, #222, #111);
+	--gradient-9: conic-gradient(from .5turn at bottom center, lightblue, white);
+	--gradient-10: conic-gradient(from 90deg at 40%, at -25%, #ffd700, #f79d03, #ee6907, #e6390a, #de0d0d, #d61039, #cf1261, #c71585, #cf1261, #d61039, #de0d0d, #ee6907, #f79d03, #ffd700, #ffd700, #ffd700);
+	--gradient-10: conic-gradient(from 90deg at 40% -25%, #ffd700, #f79d03, #ee6907, #e6390a, #de0d0d, #d61039, #cf1261, #c71585, #cf1261, #d61039, #de0d0d, #ee6907, #f79d03, #ffd700, #ffd700, #ffd700);
+	--gradient-11: conic-gradient(at bottom left, deeppink, cyan);
+	--gradient-12: conic-gradient(from 90deg at 25%, at -10%, #ff4500, #d3f340, #7bee85, #afeeee, #7bee85);
+	--gradient-12: conic-gradient(from 90deg at 25% -10%, #ff4500, #d3f340, #7bee85, #afeeee, #7bee85);
+
+	background-color: var(--gray-900);
+	overflow: hidden;
+	border-radius: 1rem;
+	transition: transform 150ms, opacity 150ms;
+	transform-origin: top right;
+}
+
+
+section.hasPadding {
+    padding-top: 1rem;
+}

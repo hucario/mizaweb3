@@ -1,0 +1,57 @@
+.sectionContainer {
+    scroll-snap-align: start;
+    /* header is 3.7rem. is it a magic number? yes. do I care enough to make it truly flexible? no */
+    scroll-margin-top: 3.7rem;
+    width: 100%;
+	min-height: calc(100vh - 3.7rem);
+    padding: 0.3rem;
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.announcer {
+	font-family: var(--font-mono);
+    color: rgba(var(--light), 0.4);
+    text-transform: uppercase;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 1rem;
+}
+.announcer::before, .announcer::after {
+    content: '';
+    background-color: rgba(var(--light), 0.2);
+    height: 2px;
+    width: 25%;
+}
+
+.flexMain {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 1rem;
+    padding-top: 0.2rem;
+    align-items: stretch;
+    flex-grow: 1;
+}
+
+.cpuUsage, .ramUsage,.networkUsage {
+    flex-basis: 30%;
+}
+.apiLatency, .cachedMessages {
+    flex-basis: 48%;
+    margin-bottom: 1rem;
+}
+
+div.apiLatency {
+    background-color: var(--gray-900);
+    border-color: var(--gray-900);
+}

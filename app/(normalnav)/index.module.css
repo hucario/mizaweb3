@@ -1,0 +1,177 @@
+.main {
+	min-height: 100%;
+}
+
+.isOut > * {
+	opacity: 0.2;
+	transform: translateY(50);
+}
+.slideIn > * {
+	opacity: 1;
+	transform: translateY(0);
+}
+.slider {
+	transition: transform 350ms, opacity 350ms;
+}
+.coolImgBro {
+	height: 110vh;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	-webkit-user-drag: none;
+	user-select: none;
+	pointer-events: none;
+	transition: opacity .3s;
+}
+.vc2 {
+	min-height: 100vh;
+}
+.vc3 {
+	min-height: 80vh;
+}
+.coolTextBro {
+	font-size: 1.2rem;
+	backdrop-filter: blur(3px);
+	background-color: rgba(255, 255, 255, 0.12);
+	padding: 2rem;
+	border-radius: 10px;
+	z-index: 9;
+}
+
+.rel {
+	position: relative;
+}
+
+.monitor {
+	left: 3vh;
+	height: 16vh;
+	top: 10%;
+	box-shadow: #00e7ff94 0 0 50px;
+	animation: bobble 5s infinite;
+}
+
+@keyframes bobble {
+	0% {
+		transform: translateY(-1vw);
+	}
+	50% {
+		transform: translateY(1vw);
+	}
+	100% {
+		transform: translateY(-1vw);
+	}
+}
+.nomoreblur .bars {
+	opacity: 0.6;
+	filter: blur(0);
+}
+.yeahblur .bars {
+	opacity: 0.2;
+	filter: blur(3px);
+}
+.bars {
+	--width: 0;
+	position: absolute;
+	left: -2vw;
+	width: 100vw;
+	top: 0;
+/*	transform: rotate(-5deg);*/
+	opacity: 0.4;
+	transition: opacity 350ms;
+}
+.bars2 {
+	--width: 0;
+	right: -2vw;
+	left: unset;
+	bottom: 0;
+	top: unset;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.bars2 .bar {
+	transform-origin: right;
+}
+.bar {
+	transition: transform 750ms cubic-bezier(0.75, 0, 0.14, 0.99);
+	will-change: transform;
+	display: block;
+	transform: scaleX(var(--width));
+	transform-origin: left;
+}
+
+.bar:not(:last-child) {
+	margin-bottom: 2px;
+}
+
+.snapPoint {
+	scroll-snap-align: center;
+}
+
+.center {
+	text-align: center;
+	width: 100%;
+}
+
+.ctas {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.ctas a {
+	display: inline-block;
+	padding: 0.4rem 1rem;
+	text-decoration: none;
+	color: white;
+	background-color: rgba(255, 0, 236, 0.31);
+	border-radius: 0.3rem;
+	will-change: background-color;
+	transition: background-color 250ms;
+	text-align: center;
+}
+
+.ctas a:hover {
+	background-color:  rgba(255, 0, 236, 0.45);
+}
+
+.mizaleaf {
+	left: 0;
+	bottom: 0;
+	height: 50vh;
+	right: unset;
+	mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 0));
+	z-index: 4;
+}
+
+
+.slide1 {
+	background-image: linear-gradient(#4a0d44, #212244);
+}
+.slide2 {
+	background-image: linear-gradient(#212244 90%, #4e0000 150%);
+}
+.slide3 {
+	background-image: linear-gradient(#212244 -1%, #4e0000 6%);
+}
+.slide4 {
+	background-image: linear-gradient(#4e0000 -8%, #463700  3%, #463700  99%, #212244  100%);
+}
+.slide5 {
+	background-color:  #212244;
+}
+
+.slide4  > .vcenter, .slide5 .vcenter {
+	min-height: 70vh;
+}
+.center {
+	font-size: 1.8rem;
+	font-weight: bolder;
+}
+
+.coolHeadingBro {
+	font-size: 1.2em;
+	font-weight: 700;
+}

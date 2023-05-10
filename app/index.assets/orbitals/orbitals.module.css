@@ -1,0 +1,74 @@
+
+.orbitals {
+	position: absolute;
+	--skew: -20deg;
+	--hue: 0;
+	--a: rgb(219, 157, 0);
+	height: 3vw;
+	width: 3vw;
+	animation: bob 20s ease infinite;
+	user-select: none;
+	pointer-events: none;
+	filter: brightness(0.9);
+}
+
+:global(.light) .orbitals {
+	filter: none;
+}
+
+.filterShadow {
+	--skew: 10deg;
+	--hue: 0;
+	--a: rgb(134, 95, 0);
+	animation-delay: -2s;
+}
+
+@keyframes bob {
+	0% {
+		transform: skew(var(--skew, -20deg), 0deg) translateY(0);
+	}
+	50% {
+		transform: skew(var(--skew, -20deg), 0deg) translateY(20px);
+	}
+	100% {
+		transform: skew(var(--skew, -20deg), 0deg) translateY(0);
+	}
+}
+
+.orbital {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 3vw;
+	height: 3vw;
+	animation: orbitalspin 20s linear infinite;
+	animation-delay: calc(var(--degree) * 1s);
+	border-radius: 100%;
+	box-shadow: var(--a) 0 0 1px, var(--a) 1px 1px 1px, var(--a) 2px 2px 1px, var(--a) 3px 3px 1px;
+	filter: hue-rotate(var(--hue, 0deg));
+}
+
+.filterShadow .orbital {
+	border-radius: unset;
+	box-shadow: unset;
+	filter: drop-shadow(var(--a) 0 0 0) drop-shadow(var(--a) -1px 1px 0) drop-shadow(var(--a) -2px 2px 0) hue-rotate(var(--hue, 0deg));
+}
+
+@keyframes orbitalspin {
+	0% {
+		transform: rotate(0deg) translateX(3vw) rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg) translateX(3vw) rotate(-360deg);
+	}
+}
+
+@media (prefers-reduced-motion) {
+	.orbital {
+		animation: none;
+		transform: rotate(calc(var(--degree) * -72deg)) translateX(3vw) rotate(calc(var(--degree) * 72deg));
+	}
+	.orbitals {
+		animation: none;
+	}
+}
