@@ -23,6 +23,7 @@
     justify-content: center;
     width: 100%;
     gap: 1rem;
+    margin-top: 1rem;
 }
 .announcer::before, .announcer::after {
     content: '';
@@ -37,15 +38,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 5px;
-    padding: 1rem;
-    padding-top: 0.2rem;
+    padding: 0.2rem 1rem;
     align-items: stretch;
     flex-grow: 1;
 }
 
-.cpuUsage, .ramUsage,.networkUsage {
-    flex-basis: 30%;
-}
+
 .apiLatency, .cachedMessages {
     flex-basis: 48%;
     margin-bottom: 1rem;
@@ -54,4 +52,136 @@
 div.apiLatency {
     background-color: var(--gray-900);
     border-color: var(--gray-900);
+}
+
+.noTopMargin {
+    margin-top: 0;
+}
+.memory {
+	flex-grow: 1;
+	box-shadow: rgba(var(--dark), 0.28) 0px 0.9px 4px,
+		rgba(var(--dark), 0.21) 0px 2.6px 8px,
+		rgba(var(--dark), 0.175) 0px 5.7px 12px,
+		rgba(var(--dark), 0.14) 0px 15px 15px;
+
+	border-radius: 5px;
+	padding: 0.8rem;
+	background-color: var(--gray-900);
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+
+	flex-basis: 35ch;
+}
+
+.memoryGrid {
+    display: grid;
+    grid-template-rows: 50% 50%;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    width: 100%;
+}
+
+.memoryHeader {
+	font-size: 1.4rem;
+	font-weight: 500;
+	font-family: var(--font-mono);
+    display: block;
+    text-align: center;
+}
+
+.memory {
+    flex-grow: 1;
+}
+
+.procNetGroup {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 0.3rem;
+}
+div.processors {
+    flex-grow: 1;
+}
+
+.networking {
+    flex-grow: 1;
+}
+
+.files {
+	flex-grow: 1;
+	box-shadow: rgba(var(--dark), 0.28) 0px 0.9px 4px,
+		rgba(var(--dark), 0.21) 0px 2.6px 8px,
+		rgba(var(--dark), 0.175) 0px 5.7px 12px,
+		rgba(var(--dark), 0.14) 0px 15px 15px;
+
+	border-radius: 5px;
+	padding: 0.8rem;
+	background-color: var(--gray-900);
+
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+
+	flex-basis: 35ch;
+}
+
+.filesHeader {
+	font-size: 1.4rem;
+	font-weight: 500;
+	font-family: var(--font-mono);
+    display: block;
+}
+.files ul {
+    padding: 0;
+    width: 100%;
+}
+
+.fileGroup {
+    width: 100%;
+    margin-bottom: 0.3rem;
+    font-family: var(--font-mono);
+    display: grid;
+    padding: 0.4rem;
+    gap: 0rem 0.4rem;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+
+    border-radius: 5px;
+}
+
+.fileGroup svg {
+    grid-column: 1/2;
+    grid-row: 1/3;
+    align-self: end;
+}
+
+.fileGroup label {
+    grid-area: 1/2;
+    line-height: 0.7;
+}
+
+.fileGroup figure {
+    grid-area: 2/2;
+}
+
+.fileGroup figcaption {
+    font-size: 0.7rem;
+    line-height: 1;
+}
+
+.fileGroup progress {
+	width: 100%;
+	appearance: none;
+	border: none;
+	border-radius: 2px;
+}
+
+.fileGroup :where(progress, progress::-webkit-progress-bar) {
+	background: var(--gray-800);
 }

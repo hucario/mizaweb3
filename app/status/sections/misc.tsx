@@ -2,7 +2,7 @@ import { FC } from "react"
 import type { StatusMiscInfo } from '../typings';
 
 import styles from './sectionStyles.module.css';
-import Widget from "../widget/widget";
+import Metric from "../metric/metric";
 
 const MiscStatusSection: FC<{
 	data: StatusMiscInfo | null,

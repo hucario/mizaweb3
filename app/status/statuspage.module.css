@@ -110,8 +110,3 @@
 	transition: transform 150ms, opacity 150ms;
 	transform-origin: top right;
 }
-
-
-section.hasPadding {
-    padding-top: 1rem;
-}

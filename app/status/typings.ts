@@ -25,9 +25,7 @@ export type ProcessorInfoType = {
 	count: number,
 	/** (usage / max) * 100 = pct% */ 
 	usage: number,
-	max: number,
-	/** no clue  */
-	time: number
+	max: number
 }
 
 export type DiscordStatusResponse = {

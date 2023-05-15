@@ -2,9 +2,9 @@ import cn from "@/lib/cn";
 import { FC, ReactNode } from "react";
 import { Icon } from "react-feather";
 
-import styles from './widget.module.css';
+import styles from './metric.module.css';
 
-const Widget: FC<{
+const Metric: FC<{
 	className: string;
 	title: string;
 	subtitle?: ReactNode;
@@ -29,4 +29,4 @@ const Widget: FC<{
 	)
 }
 
-export default Widget;
+export default Metric;

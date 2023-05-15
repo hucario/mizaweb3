@@ -2,7 +2,7 @@ import { FC } from "react"
 import type { DiscordStatusResponse } from '../typings';
 
 import styles from './sectionStyles.module.css';
-import Widget from "../widget/widget";
+import Metric from "../metric/metric";
 import { Database, Globe, MessageCircle, Server, Sliders, Smile, TrendingUp, Users } from "react-feather";
 import TimeVisualization from "../timevis";
 
@@ -20,9 +20,9 @@ const DiscordStatusSection: FC<{
 				<TimeVisualization
 					generalLabel="API latency"
 					className={styles.apiLatency}
-					ms={data["API latency"] * 1000}
+					ms={Math.round(data["API latency"] * 1000)}
 				/>
-				<Widget
+				<Metric
 					className={styles.cachedMessages}
 					title="Cached messages"
 					subtitle={data["Cached messages"]}
@@ -30,37 +30,37 @@ const DiscordStatusSection: FC<{
 					value={data["Cached messages"]}
 					icon={Database}
 				/>
-				<Widget
+				<Metric
 					className={styles.shardcount}
 					title="Shard count"
 					value={data["Shard count"]}
 					icon={Server}
 				/>
-				<Widget
+				<Metric
 					className={styles.servercount}
 					title="Server count"
 					value={data["Server count"]}
 					icon={Globe}
 				/>
-				<Widget
+				<Metric
 					className={styles.usercount}
 					title="User count"
 					value={data["User count"]}
 					icon={Users}
 				/>
-				<Widget
+				<Metric
 					className={styles.channelcount}
 					title="Channel count"
 					value={data["Channel count"]}
 					icon={MessageCircle}
 				/>
-				<Widget
+				<Metric
 					className={styles.rolecount}
 					title="Role count"
 					value={data["Role count"]}
 					icon={Sliders}
 				/>
-				<Widget
+				<Metric
 					className={styles.emojicount}
 					title="Emoji count"
 					value={data["Emoji count"]}

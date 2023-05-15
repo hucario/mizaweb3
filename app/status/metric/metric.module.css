@@ -21,15 +21,11 @@
 .titleLine {
 	display: flex;
 	align-items: center;
-	white-space: nowrap;
 }
 .title {
-	font-size: 1.1rem;
+	font-size: 1.4rem;
 	font-weight: 500;
 	font-family: var(--font-mono);
-}
-.icon {
-	
 }
 .subtitle {
 	color: rgba(var(--light), 0.7)
@@ -47,5 +43,4 @@
 	line-height: 1.3;
 	font-size: 2rem;
 	font-weight: 700;
-	white-space: nowrap;
 }

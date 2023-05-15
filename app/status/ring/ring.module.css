@@ -1,0 +1,53 @@
+.main {
+	display: grid;
+	min-width: 21ch;
+	grid-template: 100% / 100%;
+	justify-items: center;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+}
+.main svg {
+	grid-area: 1/1;
+	filter: drop-shadow(0 0 5px rgb(var(--dark)));
+	pointer-events: none;
+}
+.main figcaption {
+	grid-area: 1/1;
+	width: 100%;
+	height: 100%;
+	padding: 2.5rem;
+	display: grid;
+	grid-template: 100% / 100%;
+	justify-items: center;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+}
+.center {
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.center span {
+	font-size: 2rem;
+	font-weight: 700;
+	font-family: var(--font-mono);
+}
+.center strong {
+	font-size: 1rem;
+	font-family: var(--font-mono);
+}
+.center label {
+	font-size: 0.8rem;
+	font-weight: 500;
+	max-width: 80%;
+}
+
+.circle {
+	transition: stroke-dashoffset 0.35s;
+	transform: rotate(-90deg);
+	transform-origin: 50% 50%;
+}
