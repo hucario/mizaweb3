@@ -30,9 +30,9 @@ const Ring: FC<{
 				/>
 				<circle
 					className={styles.circle2}
-					stroke="rgba(var(--dark), 0.3)"
+					stroke="rgba(var(--light), 0.2)"
+					fill="rgba(var(--light), 0.05)"
 					strokeWidth="6"
-					fill="transparent"
 					r="50"
 					cx="60"
 					cy="60"

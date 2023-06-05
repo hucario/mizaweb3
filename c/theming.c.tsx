@@ -85,7 +85,10 @@ export function ThemeStyles() {
 					--light: 255, 255, 255;
 
 					${Object.entries(COLORS)
-						.map(([key, val]) => `--${key}: ${val};`)
+						.map(([key, val]) => `--${key}: rgb(${val});`)
+						.join("\n")}
+					${Object.entries(COLORS)
+						.map(([key, val]) => `--raw-${key}: ${val};`)
 						.join("\n")}
 				}
 				:root.dark {
@@ -93,7 +96,10 @@ export function ThemeStyles() {
 					--light: 255, 255, 255;
 					
 					${Object.entries(COLORS)
-						.map(([key, val]) => `--${key}: ${val};`)
+						.map(([key, val]) => `--${key}: rgb(${val});`)
+						.join("\n")}
+					${Object.entries(COLORS)
+						.map(([key, val]) => `--raw-${key}: ${val};`)
 						.join("\n")}
 				}
 				:root.light {
@@ -101,7 +107,10 @@ export function ThemeStyles() {
 					--light: 0, 0, 0;
 					
 					${Object.entries(COLORS)
-						.map(([key, val]) => `--${key}: ${getInvertedColor(key as ThemeColor)};`)
+						.map(([key, val]) => `--${key}: rgb(${getInvertedColor(key as ThemeColor)});`)
+						.join("\n")}
+					${Object.entries(COLORS)
+						.map(([key, val]) => `--raw-${key}: ${getInvertedColor(key as ThemeColor)};`)
 						.join("\n")}
 				}
 				@media (prefers-color-scheme: light) {
@@ -110,7 +119,10 @@ export function ThemeStyles() {
 						--light: 0, 0, 0;
 						
 						${Object.entries(COLORS)
-							.map(([key, val]) => `--${key}: ${getInvertedColor(key as ThemeColor)};`)
+							.map(([key]) => `--${key}: rgb(${getInvertedColor(key as ThemeColor)});`)
+							.join("\n")}
+						${Object.entries(COLORS)
+							.map(([key]) => `--raw-${key}: ${getInvertedColor(key as ThemeColor)};`)
 							.join("\n")}
 					}
 				}

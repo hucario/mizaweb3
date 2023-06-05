@@ -9,7 +9,7 @@
 }
 .main svg {
 	grid-area: 1/1;
-	filter: drop-shadow(0 0 5px rgb(var(--dark)));
+	filter: drop-shadow(0 0 5px rgb(var(--light)));
 	pointer-events: none;
 }
 .main figcaption {

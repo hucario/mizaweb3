@@ -200,7 +200,7 @@ export default function StatusPage() {
 			} catch(e) {
 				fails++;
 			}
-			let timeToNext = Math.pow(2, fails+2);
+			let timeToNext = Math.pow(2, fails+1) + 1;
 			console.log({fails, timeToNext})
 			timeout = window.setTimeout(updateFunc, timeToNext * 1000);
 		};

@@ -193,8 +193,8 @@ const ProcessorMonitors: FC<{
 		<div className={styles.memory}>
 			<span className={styles.memoryHeader}>Processor Utilization</span>
 			<div className={styles.memoryGrid}>
-				{Object.values(cpus).map(processor => <ProcessorRing data={processor} key={processor.name} />)}
-				{Object.values(gpus).map(processor => <ProcessorRing data={processor} key={processor.name} />)}
+				{Object.entries(cpus).map(processor => <ProcessorRing data={processor[1]} key={processor[0]} />)}
+				{Object.entries(gpus).map(processor => <ProcessorRing data={processor[1]} key={processor[0]} />)}
 			</div>
 		</div>
 	)
