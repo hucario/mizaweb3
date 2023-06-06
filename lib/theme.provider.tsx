@@ -9,7 +9,7 @@ function browser_only__getInitialColorMode(): ColorMode {
 
 	// If the user has explicitly chosen light or dark,
 	// let's use it. Otherwise, this value will be null.
-	if (typeof hasPersistedPreference !== "undefined") {
+	if (typeof hasPersistedPreference !== "undefined" && persistedColorPreference !== null) {
 		if (["light", "dark", "system"].includes(persistedColorPreference!)) {
 			return persistedColorPreference as BrowserColorMode;
 		} else {

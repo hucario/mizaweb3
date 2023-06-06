@@ -3,16 +3,115 @@
 
 import styles from './statuspage.module.css';
 import { Metadata } from 'next';
-import { StatusResponse } from './typings';
+import { StatusResponse, StringIPAddress } from './typings';
 
-import Navbar from './navbar';
-import ScrollLinks from './scrolllinks/scrolllinks';
-
-import DiscordStatusSection from './sections/discord';
-import MiscStatusSection from './sections/misc';
-import SystemStatusSection from './sections/system';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { API_ENDPOINT } from './configure_me';
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  Legend,
+  ChartData,
+  TimeScale,
+  ChartConfiguration
+} from 'chart.js';
+import 'chartjs-adapter-luxon';
+import { Line } from 'react-chartjs-2';
+import { ChartOptions } from 'react-charts';
+
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	TimeScale,
+	Tooltip,
+	Filler,
+	Legend
+);
+
+
+// Overkill
+const cyrb53 = (str: string, seed = 0) => {
+    let h1 = 0xdeadbeee ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for(let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1  = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+    h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2  = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+    h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+};
+
+const stringToColor = (str: string, opac=0.5, l=62.2) => {
+	let hash = cyrb53(str);
+	return `hsla(${hash % 360}, 70%, ${l}%, ${opac})`;
+}
+
+
+
+const options: ChartConfiguration<'line'>['options'] = {
+	responsive: true,
+	maintainAspectRatio: false,
+	plugins: {
+		filler: {
+			drawTime: "beforeDatasetDraw"
+		},
+		legend: {
+			position: 'bottom' as const,
+		}
+	},
+	animation: false,
+    interaction: {
+		mode: "index",
+		intersect: false,
+	},
+	elements: {
+		point: {
+			radius: 10
+		}
+	},
+	
+	scales: {
+		y: {
+			min: 0,
+			suggestedMax: 100,
+			stacked: false,
+			
+		},
+		x: {
+			type: 'time',
+			display: true,
+			ticks: {
+				autoSkip: true,
+				maxRotation: 0,
+				major: {
+					enabled: true,
+				},
+				callback: function(value) {
+					return new Date(this.getLabelForValue(value as number)).toLocaleTimeString(undefined, {
+						second: "numeric",
+						minute: "numeric",
+						hour: "numeric"
+					}); 
+				}
+			}
+		}
+	}
+};
+
 
 
 const mockApiResponse: StatusResponse = {
@@ -170,16 +269,12 @@ const mockApiResponse: StatusResponse = {
 };
 
 export default function StatusPage() {
-	const [apiResponse, sAPIR] = useState(mockApiResponse);
-	/*
-		these used to call useId(), but I
-		decided that it would be
-		better to have actually readable
-		ids instead of #:r1x2:
-	*/
-	const sysId = 'system';
-	const discordId = 'discord';
-	const miscId = 'misc';
+	const [chartData, setChartData] = useState<ChartData<'line'>>({
+		labels: [],
+		datasets: []
+	})
+
+	//#region a
 	let runOnce = useRef(false);
 
 	useEffect(() => {
@@ -194,14 +289,51 @@ export default function StatusPage() {
 		const updateFunc = async () => {
 			try {
 				const req = await fetch(API_ENDPOINT);
-				const data = await req.json();
-				sAPIR(data);
+				const reqData = await req.json() as StatusResponse;
+				setChartData(nowChartData => {
+				//#endregion a
+	const nextChartData = structuredClone(nowChartData);
+
+	const allProcessors = [...Object.values(reqData.system.cpu), ...Object.values(reqData.system.gpu)];
+
+	nextChartData.labels!.push(Date.now());
+	for (let processor of allProcessors) {
+		let processorChart = nextChartData.datasets.find(e => e.label === processor.name);
+		if (processorChart) {
+			processorChart.data.push((processor.usage / processor.max) * 100)
+		} else {
+			nextChartData.datasets.push({
+				label: processor.name,
+				backgroundColor: stringToColor(processor.name),
+				showLine: true,
+				borderColor: stringToColor(processor.name, 1, 20),
+				fill: 'origin',
+				tension: 0.4,
+				data: [
+					(processor.usage / processor.max) * 100
+				]
+			})
+		}
+	}
+
+	while (nextChartData.labels!.length > 10) {
+		nextChartData.labels!.shift();
+		for (let set of nextChartData.datasets) {
+			set.data.shift();
+		}
+	}
+
+	return nextChartData;
+
+
+	//#region b
+				})
 				fails = 0;
 			} catch(e) {
 				fails++;
 			}
+
 			let timeToNext = Math.pow(2, fails+1) + 1;
-			console.log({fails, timeToNext})
 			timeout = window.setTimeout(updateFunc, timeToNext * 1000);
 		};
 
@@ -210,30 +342,17 @@ export default function StatusPage() {
 			window.clearTimeout(timeout);
 		}
 	}, [])
+	//#endregion b
 
 	return (
 		<div className={styles.fullPageContainer}>
-			<Navbar>
-				<ScrollLinks
-					links={[
-						{
-							title: 'System',
-							elemId: sysId
-						},
-						{
-							title: 'Discord',
-							elemId: discordId
-						},
-						{
-							title: 'Miscellaneous',
-							elemId: miscId
-						}
-					]}
+			<div className={styles.chartParent}>
+				<Line
+					className={styles.chart}
+					options={options}
+					data={chartData}
 				/>
-			</Navbar>
-			<SystemStatusSection data={apiResponse?.system ?? null} id={sysId} />
-			<DiscordStatusSection data={apiResponse?.discord ?? null} id={discordId} />
-			<MiscStatusSection data={apiResponse?.misc ?? null} id={miscId} />
+			</div>
 		</div>
 	)
 }

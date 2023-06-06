@@ -7,6 +7,7 @@ import { type NavigationContent, type NavbarCategories, NavbarData } from "./EDI
 import Image from "next/image";
 import { FocusOn, InFocusGuard } from "react-focus-on";
 import VisuallyHidden from "../VisuallyHidden";
+import cn from "@/lib/cn";
 
 export default function Navbar() {
 	// Current real category, cached transform, is hover?
