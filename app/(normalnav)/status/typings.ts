@@ -16,6 +16,12 @@ export type SystemStatusResponse = {
 	network: {
 		[key: StringIPAddress]: ProcessorInfoType
 	};
+	power: {
+		[key: StringIPAddress]: ProcessorInfoType
+	};
+	temperature: {
+		[key: StringIPAddress]: ProcessorInfoType
+	};
 }
 
 export type ProcessorInfoType = {
@@ -56,8 +62,8 @@ export type MiscStatusResponse = {
 	]
 }
 
-export type StatusResponse = {
+export type StatusResponse = [{
 	system: SystemStatusResponse;
 	discord: DiscordStatusResponse;
 	misc: MiscStatusResponse;
-}
+}]

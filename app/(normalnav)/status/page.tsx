@@ -18,13 +18,14 @@ import {
   Tooltip,
   Filler,
   Legend,
+  Decimation,
   ChartData,
   TimeScale,
   ChartConfiguration
 } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import { Line } from 'react-chartjs-2';
-import { ChartOptions } from 'react-charts';
+// import { ChartOptions } from 'react-charts';
 
 ChartJS.register(
 	CategoryScale,
@@ -35,7 +36,8 @@ ChartJS.register(
 	TimeScale,
 	Tooltip,
 	Filler,
-	Legend
+	Legend,
+	Decimation
 );
 
 
@@ -55,14 +57,30 @@ const cyrb53 = (str: string, seed = 0) => {
     return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
-const stringToColor = (str: string, opac=0.5, l=62.2) => {
-	let hash = cyrb53(str);
-	return `hsla(${hash % 360}, 70%, ${l}%, ${opac})`;
+const HUES = [0, 120, 240];
+var HUEINDEX = 3;
+const stringToColor = (str: string | number, s=80, l=60, opac=0.5) => {
+	let h: number;
+	if ((+str) > -Infinity) {
+		const i = +str;
+		while (i >= HUES.length) {
+			HUEINDEX *= 2;
+			const length = HUES.length;
+			for (let j = 0; j < length; j++) {
+				HUES.push(HUES[j] + 360 / HUEINDEX);
+			}
+		}
+		h = HUES[i];
+		// console.log(HUES);
+	}
+	else {
+		h = cyrb53("" + str) % 360;
+	}
+	return `hsla(${h}, ${s}%, ${l}%, ${opac})`;
 }
 
 
-
-const options: ChartConfiguration<'line'>['options'] = {
+const baseOptions: ChartConfiguration<'line'>['options'] = {
 	responsive: true,
 	maintainAspectRatio: false,
 	plugins: {
@@ -71,25 +89,73 @@ const options: ChartConfiguration<'line'>['options'] = {
 		},
 		legend: {
 			position: 'bottom' as const,
-		}
+		},
+		decimation: {
+			enabled: true,
+			algorithm: "lttb",
+			samples: 60,
+			threshold: 60,
+		},
 	},
 	animation: false,
     interaction: {
 		mode: "index",
 		intersect: false,
 	},
-	elements: {
-		point: {
-			radius: 10
-		}
-	},
-	
 	scales: {
 		y: {
 			min: 0,
 			suggestedMax: 100,
 			stacked: false,
-			
+		},
+		x: {
+			type: 'time',
+			display: true,
+			ticks: {
+				autoSkip: true,
+				maxRotation: 0,
+				major: {
+					enabled: true,
+				},
+				callback: function(value) {
+					return new Date(this.getLabelForValue(value as number)).toLocaleTimeString(undefined, {
+						second: "numeric",
+						minute: "numeric",
+						hour: "numeric"
+					}); 
+				}
+			}
+		}
+	}
+};
+
+const stackedOptions: ChartConfiguration<'line'>['options'] = {
+	responsive: true,
+	maintainAspectRatio: false,
+	plugins: {
+		filler: {
+			drawTime: "beforeDatasetDraw"
+		},
+		legend: {
+			position: 'bottom' as const,
+		},
+		decimation: {
+			enabled: true,
+			algorithm: "lttb",
+			samples: 60,
+			threshold: 60,
+		},
+	},
+	animation: false,
+    interaction: {
+		mode: "index",
+		intersect: false,
+	},
+	scales: {
+		y: {
+			min: 0,
+			suggestedMax: 100,
+			stacked: true,
 		},
 		x: {
 			type: 'time',
@@ -113,8 +179,7 @@ const options: ChartConfiguration<'line'>['options'] = {
 };
 
 
-
-const mockApiResponse: StatusResponse = {
+const mockApiResponse: StatusResponse = [{
 	"system": {
 		"cpu": {
 			"162.33.23.81": {
@@ -239,6 +304,10 @@ const mockApiResponse: StatusResponse = {
 				"usage": 0,
 				"max": -1
 			}
+		},
+		"power": {
+		},
+		"temperature": {
 		}
 	},
 	"discord": {
@@ -266,13 +335,32 @@ const mockApiResponse: StatusResponse = {
 			51172
 		]
 	}
-};
+}];
 
+const NUMARRAY : number[] = [];
+const STRINGDICT: any = {};
+const utilD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
+const memD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
+const pwrD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
+const tempD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
 export default function StatusPage() {
-	const [chartData, setChartData] = useState<ChartData<'line'>>({
+	const [utilData, setUtilData] = useState<ChartData<'line'>>({
 		labels: [],
 		datasets: []
 	})
+	const [memData, setMemData] = useState<ChartData<'line'>>({
+		labels: [],
+		datasets: []
+	})
+	const [pwrData, setPwrData] = useState<ChartData<'line'>>({
+		labels: [],
+		datasets: []
+	})
+	const [tempData, setTempData] = useState<ChartData<'line'>>({
+		labels: [],
+		datasets: []
+	})
+	let firstReq = true;
 
 	//#region a
 	let runOnce = useRef(false);
@@ -284,56 +372,296 @@ export default function StatusPage() {
 			runOnce.current = true;
 		}
 		let timeout: number;
-		// exponential backoff
+		// quadratic backoff
 		let fails = 0;
 		const updateFunc = async () => {
 			try {
-				const req = await fetch(API_ENDPOINT);
-				const reqData = await req.json() as StatusResponse;
-				setChartData(nowChartData => {
-				//#endregion a
-	const nextChartData = structuredClone(nowChartData);
+				const interval = firstReq ? "?interval=1800" : ""
+				const req = await fetch(API_ENDPOINT + interval);
+				const resp = await req.json();
+				const reqData = firstReq? (resp as StatusResponse) : ([resp] as StatusResponse);
+				setUtilData(nowChartData => {
+					const target = utilD;
+					if (reqData.length > 1) firstReq = false;
+					const nextChartData = structuredClone(nowChartData);
+					for (let i = 0; i < reqData.length; i++) {
+						if (!reqData[i].system || !reqData[i].system.cpu) continue;
+						const allProcessors = [...Object.values(reqData[i].system.cpu), ...Object.values(reqData[i].system.gpu)];
 
-	const allProcessors = [...Object.values(reqData.system.cpu), ...Object.values(reqData.system.gpu)];
+						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
+						const seen: any = {};
+						for (let processor of allProcessors) {
+							let name = processor.name;
+							let j = 1;
+							while (seen[name]) {
+								j++;
+								name = processor.name + " (" + j + ")";
+							}
+							seen[name] = true;
+							let processorChart = nextChartData.datasets.find(e => e.label === name);
+							if (!processorChart) {
+								const index = Object.keys(seen).length - 1;
+								nextChartData.datasets.push({
+									label: name,
+									backgroundColor: stringToColor(index, 80, 60, 0.4),
+									showLine: true,
+									borderColor: stringToColor(index, 60, 25, 1),
+									pointRadius: 3,
+									pointBackgroundColor: stringToColor(index, 100, 50, 0.75),
+									fill: 'origin',
+									tension: 0.4,
+									data: []
+								});
+							}
+							if (!target.data[name]) {
+								target.data[name] = NUMARRAY.slice();
+							}
+							target.data[name].push(processor.usage / processor.max * 100);
+						}
+					}
+					nextChartData.labels!.length = 0;
+					const length = target.labels.length;
+					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					for (let i = 0; i < target.labels.length; i += n) {
+						let sum = 0;
+						for (let j = 0; j < n; j++) {
+							sum += target.labels[i];
+						}
+						nextChartData.labels!.push(sum / n);
+					}
+					for (let set of nextChartData.datasets) {
+						if (!set.label) continue;
+						set.data!.length = 0;
+						while (target.data[set.label].length > length) {
+							target.data[set.label].shift()
+						}
+						while (target.data[set.label].length < length) {
+							target.data[set.label].unshift(0);
+						}
+						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						for (let i = 0; i < length; i += n) {
+							let sum = 0;
+							for (let j = 0; j < n; j++) {
+								sum += target.data[set.label][i];
+							}
+							set.data!.push(sum / n);
+						}
+					}
+					return nextChartData;
+				})
+				setMemData(nowChartData => {
+					const target = memD;
+					if (reqData.length > 1) firstReq = false;
+					const nextChartData = structuredClone(nowChartData);
+					for (let i = 0; i < reqData.length; i++) {
+						if (!reqData[i].system || !reqData[i].system.memory) continue;
+						const allProcessors = Object.values(reqData[i].system.memory);
 
-	nextChartData.labels!.push(Date.now());
-	for (let processor of allProcessors) {
-		let processorChart = nextChartData.datasets.find(e => e.label === processor.name);
-		if (processorChart) {
-			processorChart.data.push((processor.usage / processor.max) * 100)
-		} else {
-			nextChartData.datasets.push({
-				label: processor.name,
-				backgroundColor: stringToColor(processor.name),
-				showLine: true,
-				borderColor: stringToColor(processor.name, 1, 20),
-				fill: 'origin',
-				tension: 0.4,
-				data: [
-					(processor.usage / processor.max) * 100
-				]
-			})
-		}
-	}
+						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
+						const seen: any = {};
+						for (let processor of allProcessors) {
+							let name = processor.name;
+							let j = 1;
+							while (seen[name]) {
+								j++;
+								name = processor.name + " (" + j + ")";
+							}
+							seen[name] = true;
+							let processorChart = nextChartData.datasets.find(e => e.label === name);
+							if (!processorChart) {
+								const index = Object.keys(seen).length - 1;
+								nextChartData.datasets.push({
+									label: name,
+									backgroundColor: stringToColor(index, 80, 60, 0.4),
+									showLine: true,
+									borderColor: stringToColor(index, 60, 25, 1),
+									pointRadius: 3,
+									pointBackgroundColor: stringToColor(index, 100, 50, 0.75),
+									fill: 'origin',
+									tension: 0.4,
+									data: []
+								});
+							}
+							if (!target.data[name]) {
+								target.data[name] = NUMARRAY.slice();
+							}
+							target.data[name].push(processor.usage / 1073741824);
+						}
+					}
+					nextChartData.labels!.length = 0;
+					const length = target.labels.length;
+					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					for (let i = 0; i < target.labels.length; i += n) {
+						let sum = 0;
+						for (let j = 0; j < n; j++) {
+							sum += target.labels[i];
+						}
+						nextChartData.labels!.push(sum / n);
+					}
+					for (let set of nextChartData.datasets) {
+						if (!set.label) continue;
+						set.data!.length = 0;
+						while (target.data[set.label].length > length) {
+							target.data[set.label].shift()
+						}
+						while (target.data[set.label].length < length) {
+							target.data[set.label].unshift(0);
+						}
+						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						for (let i = 0; i < length; i += n) {
+							let sum = 0;
+							for (let j = 0; j < n; j++) {
+								sum += target.data[set.label][i];
+							}
+							set.data!.push(sum / n);
+						}
+					}
+					return nextChartData;
+				})
+				setPwrData(nowChartData => {
+					const target = pwrD;
+					if (reqData.length > 1) firstReq = false;
+					const nextChartData = structuredClone(nowChartData);
+					for (let i = 0; i < reqData.length; i++) {
+						if (!reqData[i].system || !reqData[i].system.power) continue;
+						const allProcessors = Object.values(reqData[i].system.power);
 
-	while (nextChartData.labels!.length > 10) {
-		nextChartData.labels!.shift();
-		for (let set of nextChartData.datasets) {
-			set.data.shift();
-		}
-	}
+						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
+						const seen: any = {};
+						for (let processor of allProcessors) {
+							let name = processor.name;
+							let j = 1;
+							while (seen[name]) {
+								j++;
+								name = processor.name + " (" + j + ")";
+							}
+							seen[name] = true;
+							let processorChart = nextChartData.datasets.find(e => e.label === name);
+							if (!processorChart) {
+								const index = Object.keys(seen).length - 1;
+								nextChartData.datasets.push({
+									label: name,
+									backgroundColor: stringToColor(index, 80, 60, 0.4),
+									showLine: true,
+									borderColor: stringToColor(index, 60, 25, 1),
+									pointRadius: 3,
+									pointBackgroundColor: stringToColor(index, 100, 50, 0.75),
+									fill: 'origin',
+									tension: 0.4,
+									data: []
+								});
+							}
+							if (!target.data[name]) {
+								target.data[name] = NUMARRAY.slice();
+							}
+							target.data[name].push(processor.usage);
+						}
+					}
+					nextChartData.labels!.length = 0;
+					const length = target.labels.length;
+					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					for (let i = 0; i < target.labels.length; i += n) {
+						let sum = 0;
+						for (let j = 0; j < n; j++) {
+							sum += target.labels[i];
+						}
+						nextChartData.labels!.push(sum / n);
+					}
+					for (let set of nextChartData.datasets) {
+						if (!set.label) continue;
+						set.data!.length = 0;
+						while (target.data[set.label].length > length) {
+							target.data[set.label].shift()
+						}
+						while (target.data[set.label].length < length) {
+							target.data[set.label].unshift(0);
+						}
+						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						for (let i = 0; i < length; i += n) {
+							let sum = 0;
+							for (let j = 0; j < n; j++) {
+								sum += target.data[set.label][i];
+							}
+							set.data!.push(sum / n);
+						}
+					}
+					return nextChartData;
+				})
+				setTempData(nowChartData => {
+					const target = tempD;
+					if (reqData.length > 1) firstReq = false;
+					const nextChartData = structuredClone(nowChartData);
+					for (let i = 0; i < reqData.length; i++) {
+						if (!reqData[i].system || !reqData[i].system.temperature) continue;
+						const allProcessors = Object.values(reqData[i].system.temperature);
 
-	return nextChartData;
-
-
-	//#region b
+						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
+						const seen: any = {};
+						for (let processor of allProcessors) {
+							let name = processor.name;
+							let j = 1;
+							while (seen[name]) {
+								j++;
+								name = processor.name + " (" + j + ")";
+							}
+							seen[name] = true;
+							let processorChart = nextChartData.datasets.find(e => e.label === name);
+							if (!processorChart) {
+								const index = Object.keys(seen).length - 1;
+								nextChartData.datasets.push({
+									label: name,
+									backgroundColor: stringToColor(index, 80, 60, 0.4),
+									showLine: true,
+									borderColor: stringToColor(index, 60, 25, 1),
+									pointRadius: 3,
+									pointBackgroundColor: stringToColor(index, 100, 50, 0.75),
+									fill: 'origin',
+									tension: 0.4,
+									data: []
+								});
+							}
+							if (!target.data[name]) {
+								target.data[name] = NUMARRAY.slice();
+							}
+							target.data[name].push(processor.usage);
+						}
+					}
+					nextChartData.labels!.length = 0;
+					const length = target.labels.length;
+					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					for (let i = 0; i < target.labels.length; i += n) {
+						let sum = 0;
+						for (let j = 0; j < n; j++) {
+							sum += target.labels[i];
+						}
+						nextChartData.labels!.push(sum / n);
+					}
+					for (let set of nextChartData.datasets) {
+						if (!set.label) continue;
+						set.data!.length = 0;
+						while (target.data[set.label].length > length) {
+							target.data[set.label].shift()
+						}
+						while (target.data[set.label].length < length) {
+							target.data[set.label].unshift(0);
+						}
+						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						for (let i = 0; i < length; i += n) {
+							let sum = 0;
+							for (let j = 0; j < n; j++) {
+								sum += target.data[set.label][i];
+							}
+							set.data!.push(sum / n);
+						}
+					}
+					return nextChartData;
 				})
 				fails = 0;
 			} catch(e) {
 				fails++;
 			}
 
-			let timeToNext = Math.pow(2, fails+1) + 1;
+			let timeToNext = Math.pow(fails + 1, 2) + 1;
 			timeout = window.setTimeout(updateFunc, timeToNext * 1000);
 		};
 
@@ -345,15 +673,48 @@ export default function StatusPage() {
 	//#endregion b
 
 	return (
-		<div className={styles.fullPageContainer}>
-			<div className={styles.chartParent}>
-				<Line
-					className={styles.chart}
-					options={options}
-					data={chartData}
-				/>
+		<body>
+			<div className={styles.quarterPageContainer}>
+				<div className={styles.chartParent}>
+					Processor Utilisation (%)
+					<Line
+						className={styles.chart}
+						options={baseOptions}
+						data={utilData}
+					/>
+				</div>
 			</div>
-		</div>
+			<div className={styles.quarterPageContainer}>
+				<div className={styles.chartParent}>
+					Memory Utilisation (GB)
+					<Line
+						className={styles.chart}
+						options={stackedOptions}
+						data={memData}
+					/>
+				</div>
+			</div>
+			<div className={styles.quarterPageContainer}>
+				<div className={styles.chartParent}>
+					Power Utilisation (W)
+					<Line
+						className={styles.chart}
+						options={stackedOptions}
+						data={pwrData}
+					/>
+				</div>
+			</div>
+			<div className={styles.quarterPageContainer}>
+				<div className={styles.chartParent}>
+					Temperature Monitor (C)
+					<Line
+						className={styles.chart}
+						options={baseOptions}
+						data={tempData}
+					/>
+				</div>
+			</div>
+		</body>
 	)
 }
 
