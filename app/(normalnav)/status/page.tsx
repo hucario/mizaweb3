@@ -337,6 +337,12 @@ const mockApiResponse: StatusResponse = [{
 	}
 }];
 
+function sleep(time: number) {
+    return new Promise(resolve => {
+        setTimeout(resolve, time);
+    });
+}
+
 const NUMARRAY : number[] = [];
 const STRINGDICT: any = {};
 const utilD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
@@ -375,12 +381,19 @@ export default function StatusPage() {
 		// quadratic backoff
 		let fails = 0;
 		const updateFunc = async () => {
+			let timeToNext = Math.pow(fails + 1, 2) * 1000 + 2000;
+			let rDel = 0;
 			try {
 				const interval = firstReq ? "?interval=1800" : ""
+				const orig = Date.now();
 				const req = await fetch(API_ENDPOINT + interval);
 				const resp = await req.json();
+				rDel = Date.now() - orig
+				// timeToNext -= rDel;
+				// if (timeToNext < 1000) timeToNext = 1000;
 				const reqData = firstReq? (resp as StatusResponse) : ([resp] as StatusResponse);
 				setUtilData(nowChartData => {
+					const bars = Math.round(window.innerWidth / 12);
 					const target = utilD;
 					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
@@ -420,8 +433,9 @@ export default function StatusPage() {
 						}
 					}
 					nextChartData.labels!.length = 0;
+					while (target.labels.length > 300) target.labels.shift();
 					const length = target.labels.length;
-					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
 						let sum = 0;
 						for (let j = 0; j < n; j++) {
@@ -438,7 +452,7 @@ export default function StatusPage() {
 						while (target.data[set.label].length < length) {
 							target.data[set.label].unshift(0);
 						}
-						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
 							let sum = 0;
 							for (let j = 0; j < n; j++) {
@@ -449,7 +463,9 @@ export default function StatusPage() {
 					}
 					return nextChartData;
 				})
+				await sleep(timeToNext / 4);
 				setMemData(nowChartData => {
+					const bars = Math.round(window.innerWidth / 32);
 					const target = memD;
 					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
@@ -489,8 +505,9 @@ export default function StatusPage() {
 						}
 					}
 					nextChartData.labels!.length = 0;
+					while (target.labels.length > 300) target.labels.shift();
 					const length = target.labels.length;
-					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
 						let sum = 0;
 						for (let j = 0; j < n; j++) {
@@ -507,7 +524,7 @@ export default function StatusPage() {
 						while (target.data[set.label].length < length) {
 							target.data[set.label].unshift(0);
 						}
-						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
 							let sum = 0;
 							for (let j = 0; j < n; j++) {
@@ -518,7 +535,9 @@ export default function StatusPage() {
 					}
 					return nextChartData;
 				})
+				await sleep(timeToNext / 4);
 				setPwrData(nowChartData => {
+					const bars = Math.round(window.innerWidth / 16);
 					const target = pwrD;
 					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
@@ -558,8 +577,9 @@ export default function StatusPage() {
 						}
 					}
 					nextChartData.labels!.length = 0;
+					while (target.labels.length > 300) target.labels.shift();
 					const length = target.labels.length;
-					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
 						let sum = 0;
 						for (let j = 0; j < n; j++) {
@@ -576,7 +596,7 @@ export default function StatusPage() {
 						while (target.data[set.label].length < length) {
 							target.data[set.label].unshift(0);
 						}
-						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
 							let sum = 0;
 							for (let j = 0; j < n; j++) {
@@ -587,7 +607,9 @@ export default function StatusPage() {
 					}
 					return nextChartData;
 				})
+				await sleep(timeToNext / 4);
 				setTempData(nowChartData => {
+					const bars = Math.round(window.innerWidth / 24);
 					const target = tempD;
 					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
@@ -627,8 +649,9 @@ export default function StatusPage() {
 						}
 					}
 					nextChartData.labels!.length = 0;
+					while (target.labels.length > 300) target.labels.shift();
 					const length = target.labels.length;
-					const n = length <= 60 ? 1 : Math.ceil(length / 60);
+					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
 						let sum = 0;
 						for (let j = 0; j < n; j++) {
@@ -645,7 +668,7 @@ export default function StatusPage() {
 						while (target.data[set.label].length < length) {
 							target.data[set.label].unshift(0);
 						}
-						const n = length <= 60 ? 1 : Math.ceil(length / 60);
+						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
 							let sum = 0;
 							for (let j = 0; j < n; j++) {
@@ -660,9 +683,9 @@ export default function StatusPage() {
 			} catch(e) {
 				fails++;
 			}
-
-			let timeToNext = Math.pow(fails + 1, 2) + 1;
-			timeout = window.setTimeout(updateFunc, timeToNext * 1000);
+			let nDel = timeToNext / 4 - rDel;
+			if (nDel < 0) nDel = 0;
+			timeout = window.setTimeout(updateFunc, nDel);
 		};
 
 		updateFunc();
@@ -686,7 +709,7 @@ export default function StatusPage() {
 			</div>
 			<div className={styles.quarterPageContainer}>
 				<div className={styles.chartParent}>
-					Memory Utilisation (GB)
+					Memory Allocation (GB)
 					<Line
 						className={styles.chart}
 						options={stackedOptions}
@@ -696,7 +719,7 @@ export default function StatusPage() {
 			</div>
 			<div className={styles.quarterPageContainer}>
 				<div className={styles.chartParent}>
-					Power Utilisation (W)
+					Power Consumption (W)
 					<Line
 						className={styles.chart}
 						options={stackedOptions}
