@@ -437,11 +437,11 @@ export default function StatusPage() {
 					const length = target.labels.length;
 					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
-						let sum = 0;
+						let high = 0;
 						for (let j = 0; j < n; j++) {
-							sum += target.labels[i];
+							high = target.labels[i] > high ? target.labels[i] : high;
 						}
-						nextChartData.labels!.push(sum / n);
+						nextChartData.labels!.push(high);
 					}
 					for (let set of nextChartData.datasets) {
 						if (!set.label) continue;
@@ -454,11 +454,11 @@ export default function StatusPage() {
 						}
 						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
-							let sum = 0;
+							let high = 0;
 							for (let j = 0; j < n; j++) {
-								sum += target.data[set.label][i];
+								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
 							}
-							set.data!.push(sum / n);
+							set.data!.push(high);
 						}
 					}
 					return nextChartData;
@@ -509,11 +509,11 @@ export default function StatusPage() {
 					const length = target.labels.length;
 					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
-						let sum = 0;
+						let high = 0;
 						for (let j = 0; j < n; j++) {
-							sum += target.labels[i];
+							high = target.labels[i] > high ? target.labels[i] : high;
 						}
-						nextChartData.labels!.push(sum / n);
+						nextChartData.labels!.push(high);
 					}
 					for (let set of nextChartData.datasets) {
 						if (!set.label) continue;
@@ -526,11 +526,11 @@ export default function StatusPage() {
 						}
 						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
-							let sum = 0;
+							let high = 0;
 							for (let j = 0; j < n; j++) {
-								sum += target.data[set.label][i];
+								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
 							}
-							set.data!.push(sum / n);
+							set.data!.push(high);
 						}
 					}
 					return nextChartData;
@@ -581,11 +581,11 @@ export default function StatusPage() {
 					const length = target.labels.length;
 					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
-						let sum = 0;
+						let high = 0;
 						for (let j = 0; j < n; j++) {
-							sum += target.labels[i];
+							high = target.labels[i] > high ? target.labels[i] : high;
 						}
-						nextChartData.labels!.push(sum / n);
+						nextChartData.labels!.push(high);
 					}
 					for (let set of nextChartData.datasets) {
 						if (!set.label) continue;
@@ -598,11 +598,11 @@ export default function StatusPage() {
 						}
 						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
-							let sum = 0;
+							let high = 0;
 							for (let j = 0; j < n; j++) {
-								sum += target.data[set.label][i];
+								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
 							}
-							set.data!.push(sum / n);
+							set.data!.push(high);
 						}
 					}
 					return nextChartData;
@@ -653,11 +653,11 @@ export default function StatusPage() {
 					const length = target.labels.length;
 					const n = length <= bars ? 1 : Math.ceil(length / bars);
 					for (let i = 0; i < target.labels.length; i += n) {
-						let sum = 0;
+						let high = 0;
 						for (let j = 0; j < n; j++) {
-							sum += target.labels[i];
+							high = target.labels[i] > high ? target.labels[i] : high;
 						}
-						nextChartData.labels!.push(sum / n);
+						nextChartData.labels!.push(high);
 					}
 					for (let set of nextChartData.datasets) {
 						if (!set.label) continue;
@@ -670,11 +670,11 @@ export default function StatusPage() {
 						}
 						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
-							let sum = 0;
+							let high = 0;
 							for (let j = 0; j < n; j++) {
-								sum += target.data[set.label][i];
+								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
 							}
-							set.data!.push(sum / n);
+							set.data!.push(high);
 						}
 					}
 					return nextChartData;
