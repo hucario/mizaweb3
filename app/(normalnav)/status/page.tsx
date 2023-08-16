@@ -2,8 +2,8 @@
 // temporarily. only in dev for hot reloading. if you see this later, delete the use client thing.
 
 import styles from './statuspage.module.css';
-import { Metadata } from 'next';
-import { StatusResponse, StringIPAddress } from './typings';
+// import { Metadata } from 'next';
+import { StatusResponse, StringIPAddress, TempChartData } from './typings';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { API_ENDPOINT } from './configure_me';
@@ -343,12 +343,10 @@ function sleep(time: number) {
     });
 }
 
-const NUMARRAY : number[] = [];
-const STRINGDICT: any = {};
-const utilD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
-const memD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
-const pwrD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
-const tempD = {labels: NUMARRAY.slice(), data: structuredClone(STRINGDICT)};
+const utilD: TempChartData = {labels: [], data: []};
+const memD: TempChartData = {labels: [], data: []};
+const pwrD: TempChartData = {labels: [], data: []};
+const tempD: TempChartData = {labels: [], data: []};
 export default function StatusPage() {
 	const [utilData, setUtilData] = useState<ChartData<'line'>>({
 		labels: [],
@@ -380,22 +378,57 @@ export default function StatusPage() {
 		let timeout: number;
 		// quadratic backoff
 		let fails = 0;
+		let lastReq = Date.now();
 		const updateFunc = async () => {
 			let timeToNext = Math.pow(fails + 1, 2) * 1000 + 2000;
 			let rDel = 0;
+			const interval = firstReq ? "?interval=1800" : ""
+			const orig = Date.now();
 			try {
-				const interval = firstReq ? "?interval=1800" : ""
-				const orig = Date.now();
 				const req = await fetch(API_ENDPOINT + interval);
 				const resp = await req.json();
 				rDel = Date.now() - orig
 				// timeToNext -= rDel;
 				// if (timeToNext < 1000) timeToNext = 1000;
 				const reqData = firstReq? (resp as StatusResponse) : ([resp] as StatusResponse);
+				function iterateDataset(nextChartData: ChartData<'line'>, target: TempChartData, bars: number) {
+					nextChartData.labels!.length = 0;
+					while (target.labels.length > 300) target.labels.shift();
+					const length = target.labels.length;
+					const n = length <= bars ? 1 : Math.ceil(length / bars);
+					for (let i = 0; i < target.labels.length; i += n) {
+						let high = 0;
+						for (let j = 0; j < n; j++) {
+							high = target.labels[i + j] > high ? target.labels[i + j] : high;
+						}
+						nextChartData.labels!.push(high);
+					}
+					for (let set of nextChartData.datasets) {
+						if (!set.label) continue;
+						set.data!.length = 0;
+						while (target.data[set.label].length > length) {
+							target.data[set.label].shift()
+						}
+						while (target.data[set.label].length < length) {
+							target.data[set.label].unshift(0);
+						}
+						const n = length <= bars ? 1 : Math.ceil(length / bars);
+						for (let i = 0; i < length; i += n) {
+							let high = 0;
+							for (let j = 0; j < n; j++) {
+								high = target.data[set.label][i + j] > high ? target.data[set.label][i + j] : high;
+							}
+							set.data!.push(high);
+						}
+					}
+					return nextChartData;
+				}
 				setUtilData(nowChartData => {
 					const bars = Math.round(window.innerWidth / 12);
 					const target = utilD;
-					if (reqData.length > 1) firstReq = false;
+					if (Date.now() - lastReq > 30000) firstReq = true;
+					else if (reqData.length > 1) firstReq = false;
+					lastReq = Date.now();
 					const nextChartData = structuredClone(nowChartData);
 					for (let i = 0; i < reqData.length; i++) {
 						if (!reqData[i].system || !reqData[i].system.cpu) continue;
@@ -427,47 +460,17 @@ export default function StatusPage() {
 								});
 							}
 							if (!target.data[name]) {
-								target.data[name] = NUMARRAY.slice();
+								target.data[name] = [];
 							}
 							target.data[name].push(processor.usage / processor.max * 100);
 						}
 					}
-					nextChartData.labels!.length = 0;
-					while (target.labels.length > 300) target.labels.shift();
-					const length = target.labels.length;
-					const n = length <= bars ? 1 : Math.ceil(length / bars);
-					for (let i = 0; i < target.labels.length; i += n) {
-						let high = 0;
-						for (let j = 0; j < n; j++) {
-							high = target.labels[i] > high ? target.labels[i] : high;
-						}
-						nextChartData.labels!.push(high);
-					}
-					for (let set of nextChartData.datasets) {
-						if (!set.label) continue;
-						set.data!.length = 0;
-						while (target.data[set.label].length > length) {
-							target.data[set.label].shift()
-						}
-						while (target.data[set.label].length < length) {
-							target.data[set.label].unshift(0);
-						}
-						const n = length <= bars ? 1 : Math.ceil(length / bars);
-						for (let i = 0; i < length; i += n) {
-							let high = 0;
-							for (let j = 0; j < n; j++) {
-								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
-							}
-							set.data!.push(high);
-						}
-					}
-					return nextChartData;
+					return iterateDataset(nextChartData, target, bars);
 				})
 				await sleep(timeToNext / 4);
 				setMemData(nowChartData => {
 					const bars = Math.round(window.innerWidth / 32);
 					const target = memD;
-					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
 					for (let i = 0; i < reqData.length; i++) {
 						if (!reqData[i].system || !reqData[i].system.memory) continue;
@@ -499,47 +502,17 @@ export default function StatusPage() {
 								});
 							}
 							if (!target.data[name]) {
-								target.data[name] = NUMARRAY.slice();
+								target.data[name] = [];
 							}
 							target.data[name].push(processor.usage / 1073741824);
 						}
 					}
-					nextChartData.labels!.length = 0;
-					while (target.labels.length > 300) target.labels.shift();
-					const length = target.labels.length;
-					const n = length <= bars ? 1 : Math.ceil(length / bars);
-					for (let i = 0; i < target.labels.length; i += n) {
-						let high = 0;
-						for (let j = 0; j < n; j++) {
-							high = target.labels[i] > high ? target.labels[i] : high;
-						}
-						nextChartData.labels!.push(high);
-					}
-					for (let set of nextChartData.datasets) {
-						if (!set.label) continue;
-						set.data!.length = 0;
-						while (target.data[set.label].length > length) {
-							target.data[set.label].shift()
-						}
-						while (target.data[set.label].length < length) {
-							target.data[set.label].unshift(0);
-						}
-						const n = length <= bars ? 1 : Math.ceil(length / bars);
-						for (let i = 0; i < length; i += n) {
-							let high = 0;
-							for (let j = 0; j < n; j++) {
-								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
-							}
-							set.data!.push(high);
-						}
-					}
-					return nextChartData;
+					return iterateDataset(nextChartData, target, bars);
 				})
 				await sleep(timeToNext / 4);
 				setPwrData(nowChartData => {
 					const bars = Math.round(window.innerWidth / 16);
 					const target = pwrD;
-					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
 					for (let i = 0; i < reqData.length; i++) {
 						if (!reqData[i].system || !reqData[i].system.power) continue;
@@ -571,47 +544,17 @@ export default function StatusPage() {
 								});
 							}
 							if (!target.data[name]) {
-								target.data[name] = NUMARRAY.slice();
+								target.data[name] = [];
 							}
 							target.data[name].push(processor.usage);
 						}
 					}
-					nextChartData.labels!.length = 0;
-					while (target.labels.length > 300) target.labels.shift();
-					const length = target.labels.length;
-					const n = length <= bars ? 1 : Math.ceil(length / bars);
-					for (let i = 0; i < target.labels.length; i += n) {
-						let high = 0;
-						for (let j = 0; j < n; j++) {
-							high = target.labels[i] > high ? target.labels[i] : high;
-						}
-						nextChartData.labels!.push(high);
-					}
-					for (let set of nextChartData.datasets) {
-						if (!set.label) continue;
-						set.data!.length = 0;
-						while (target.data[set.label].length > length) {
-							target.data[set.label].shift()
-						}
-						while (target.data[set.label].length < length) {
-							target.data[set.label].unshift(0);
-						}
-						const n = length <= bars ? 1 : Math.ceil(length / bars);
-						for (let i = 0; i < length; i += n) {
-							let high = 0;
-							for (let j = 0; j < n; j++) {
-								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
-							}
-							set.data!.push(high);
-						}
-					}
-					return nextChartData;
+					return iterateDataset(nextChartData, target, bars);
 				})
 				await sleep(timeToNext / 4);
 				setTempData(nowChartData => {
 					const bars = Math.round(window.innerWidth / 24);
 					const target = tempD;
-					if (reqData.length > 1) firstReq = false;
 					const nextChartData = structuredClone(nowChartData);
 					for (let i = 0; i < reqData.length; i++) {
 						if (!reqData[i].system || !reqData[i].system.temperature) continue;
@@ -643,41 +586,12 @@ export default function StatusPage() {
 								});
 							}
 							if (!target.data[name]) {
-								target.data[name] = NUMARRAY.slice();
+								target.data[name] = [];
 							}
 							target.data[name].push(processor.usage);
 						}
 					}
-					nextChartData.labels!.length = 0;
-					while (target.labels.length > 300) target.labels.shift();
-					const length = target.labels.length;
-					const n = length <= bars ? 1 : Math.ceil(length / bars);
-					for (let i = 0; i < target.labels.length; i += n) {
-						let high = 0;
-						for (let j = 0; j < n; j++) {
-							high = target.labels[i] > high ? target.labels[i] : high;
-						}
-						nextChartData.labels!.push(high);
-					}
-					for (let set of nextChartData.datasets) {
-						if (!set.label) continue;
-						set.data!.length = 0;
-						while (target.data[set.label].length > length) {
-							target.data[set.label].shift()
-						}
-						while (target.data[set.label].length < length) {
-							target.data[set.label].unshift(0);
-						}
-						const n = length <= bars ? 1 : Math.ceil(length / bars);
-						for (let i = 0; i < length; i += n) {
-							let high = 0;
-							for (let j = 0; j < n; j++) {
-								high = target.data[set.label][i] > high ? target.data[set.label][i] : high;
-							}
-							set.data!.push(high);
-						}
-					}
-					return nextChartData;
+					return iterateDataset(nextChartData, target, bars);
 				})
 				fails = 0;
 			} catch(e) {
@@ -741,11 +655,10 @@ export default function StatusPage() {
 	)
 }
 
-/*
-export const metadata: Metadata = {
-	title: {
-		absolute: "MizAnalytics",
-		template: "%s | MizAnalytics",
-	},
-}
-*/
+
+// export const metadata: Metadata = {
+// 	title: {
+// 		absolute: "MizAnalytics",
+// 		template: "%s | MizAnalytics",
+// 	},
+// }

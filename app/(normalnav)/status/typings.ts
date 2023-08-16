@@ -67,3 +67,8 @@ export type StatusResponse = [{
 	discord: DiscordStatusResponse;
 	misc: MiscStatusResponse;
 }]
+
+export type TempChartData = {
+	labels: number[],
+	data: any
+}
