@@ -343,6 +343,7 @@ function sleep(time: number) {
     });
 }
 
+const indexMap: any = {};
 const utilD: TempChartData = {labels: [], data: []};
 const memD: TempChartData = {labels: [], data: []};
 const pwrD: TempChartData = {labels: [], data: []};
@@ -444,9 +445,12 @@ export default function StatusPage() {
 								name = processor.name + " (" + j + ")";
 							}
 							seen[name] = true;
+							if (indexMap[name] == undefined) {
+								indexMap[name] = Object.keys(indexMap).length;
+							}
+							const index = indexMap[name];
 							let processorChart = nextChartData.datasets.find(e => e.label === name);
 							if (!processorChart) {
-								const index = Object.keys(seen).length - 1;
 								nextChartData.datasets.push({
 									label: name,
 									backgroundColor: stringToColor(index, 80, 60, 0.4),
@@ -486,9 +490,12 @@ export default function StatusPage() {
 								name = processor.name + " (" + j + ")";
 							}
 							seen[name] = true;
+							if (indexMap[name] == undefined) {
+								indexMap[name] = Object.keys(indexMap).length;
+							}
+							const index = indexMap[name];
 							let processorChart = nextChartData.datasets.find(e => e.label === name);
 							if (!processorChart) {
-								const index = Object.keys(seen).length - 1;
 								nextChartData.datasets.push({
 									label: name,
 									backgroundColor: stringToColor(index, 80, 60, 0.4),
@@ -528,9 +535,12 @@ export default function StatusPage() {
 								name = processor.name + " (" + j + ")";
 							}
 							seen[name] = true;
+							if (indexMap[name] == undefined) {
+								indexMap[name] = Object.keys(indexMap).length;
+							}
+							const index = indexMap[name];
 							let processorChart = nextChartData.datasets.find(e => e.label === name);
 							if (!processorChart) {
-								const index = Object.keys(seen).length - 1;
 								nextChartData.datasets.push({
 									label: name,
 									backgroundColor: stringToColor(index, 80, 60, 0.4),
@@ -570,9 +580,12 @@ export default function StatusPage() {
 								name = processor.name + " (" + j + ")";
 							}
 							seen[name] = true;
+							if (indexMap[name] == undefined) {
+								indexMap[name] = Object.keys(indexMap).length;
+							}
+							const index = indexMap[name];
 							let processorChart = nextChartData.datasets.find(e => e.label === name);
 							if (!processorChart) {
-								const index = Object.keys(seen).length - 1;
 								nextChartData.datasets.push({
 									label: name,
 									backgroundColor: stringToColor(index, 80, 60, 0.4),
