@@ -411,7 +411,7 @@ export default function StatusPage() {
 							target.data[set.label].shift()
 						}
 						while (target.data[set.label].length < length) {
-							target.data[set.label].unshift(0);
+							target.data[set.label].push(0);
 						}
 						const n = length <= bars ? 1 : Math.ceil(length / bars);
 						for (let i = 0; i < length; i += n) {
@@ -437,7 +437,7 @@ export default function StatusPage() {
 
 						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
 						const seen: any = {};
-						for (let processor of allProcessors) {
+						for (let processor of allProcessors.sort((a, b) => a.name.localeCompare(b.name))) {
 							let name = processor.name;
 							let j = 1;
 							while (seen[name]) {
@@ -465,6 +465,10 @@ export default function StatusPage() {
 							}
 							if (!target.data[name]) {
 								target.data[name] = [];
+							}
+							while (target.data[name].length < i) {
+								if (!target.data[name].length) target.data[name].push(0);
+								else target.data[name].push(target.data[name][i - 1]);
 							}
 							target.data[name].push(processor.usage / processor.max * 100);
 						}
@@ -482,7 +486,7 @@ export default function StatusPage() {
 
 						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
 						const seen: any = {};
-						for (let processor of allProcessors) {
+						for (let processor of allProcessors.sort((a, b) => a.name.localeCompare(b.name))) {
 							let name = processor.name;
 							let j = 1;
 							while (seen[name]) {
@@ -510,6 +514,10 @@ export default function StatusPage() {
 							}
 							if (!target.data[name]) {
 								target.data[name] = [];
+							}
+							while (target.data[name].length < i) {
+								if (!target.data[name].length) target.data[name].push(0);
+								else target.data[name].push(target.data[name][i - 1]);
 							}
 							target.data[name].push(processor.usage / 1073741824);
 						}
@@ -527,7 +535,7 @@ export default function StatusPage() {
 
 						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
 						const seen: any = {};
-						for (let processor of allProcessors) {
+						for (let processor of allProcessors.sort((a, b) => a.name.localeCompare(b.name))) {
 							let name = processor.name;
 							let j = 1;
 							while (seen[name]) {
@@ -555,6 +563,10 @@ export default function StatusPage() {
 							}
 							if (!target.data[name]) {
 								target.data[name] = [];
+							}
+							while (target.data[name].length < i) {
+								if (!target.data[name].length) target.data[name].push(0);
+								else target.data[name].push(target.data[name][i - 1]);
 							}
 							target.data[name].push(processor.usage);
 						}
@@ -572,7 +584,7 @@ export default function StatusPage() {
 
 						target.labels!.push(Date.parse(reqData[i].misc["System time"]));
 						const seen: any = {};
-						for (let processor of allProcessors) {
+						for (let processor of allProcessors.sort((a, b) => a.name.localeCompare(b.name))) {
 							let name = processor.name;
 							let j = 1;
 							while (seen[name]) {
@@ -601,6 +613,10 @@ export default function StatusPage() {
 							if (!target.data[name]) {
 								target.data[name] = [];
 							}
+							while (target.data[name].length < i) {
+								if (!target.data[name].length) target.data[name].push(0);
+								else target.data[name].push(target.data[name][i - 1]);
+							}
 							target.data[name].push(processor.usage);
 						}
 					}
@@ -612,6 +628,7 @@ export default function StatusPage() {
 			}
 			let nDel = timeToNext / 4 - rDel;
 			if (nDel < 0) nDel = 0;
+			else if (nDel > 60000) nDel = 60000;
 			timeout = window.setTimeout(updateFunc, nDel);
 		};
 
